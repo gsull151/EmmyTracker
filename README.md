@@ -49,11 +49,10 @@ key, can read your data.
 
 ## 3. Turn on email sign-in
 
-Supabase email sign-in (magic link) is on by default. Optional but
-recommended: in **Authentication → URL Configuration**, add the GitHub
-Pages URL you'll get in step 5 as a **Redirect URL**, so the sign-in link
-sends you back to the right place. You can come back and do this after
-step 5 if it's easier.
+Supabase email OTP sign-in is on by default. The app uses the 6-digit
+**code** flow (not the magic link), so under **Authentication → Email
+Templates → Magic Link**, make sure the template includes `{{ .Token }}`
+— that's what makes the 6-digit code actually show up in the email.
 
 ## 4. Get your API keys
 
@@ -62,8 +61,8 @@ In your Supabase project, go to **Settings → API**. You need two values:
 - **Project URL** (looks like `https://xxxxx.supabase.co`)
 - **anon public** key (a long string)
 
-Open `index.html` in this folder and paste them in near the top of the
-`<script>` section:
+Open [`src/services/supabaseService.js`](src/services/supabaseService.js)
+and paste them in near the top:
 
 ```js
 const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
@@ -76,9 +75,13 @@ data, not keeping this key secret.
 
 ## 5. Push to GitHub and turn on Pages
 
+This is a Vite + Vue app, so GitHub Pages needs to build it before serving
+it — that's handled by the included GitHub Actions workflow at
+`.github/workflows/deploy.yml`.
+
 1. Create a new **private or public** GitHub repo (either is fine).
-2. Add all the files from this folder (`index.html`, `manifest.json`,
-   `sw.js`, `icon-192.png`, `icon-512.png`) to the repo and push:
+2. Push everything in this folder (`node_modules` and `dist` are
+   gitignored, so `git add .` won't include them):
    ```bash
    git init
    git add .
@@ -88,10 +91,13 @@ data, not keeping this key secret.
    git push -u origin main
    ```
 3. In the repo on GitHub: **Settings → Pages** → under "Build and
-   deployment", set **Source** to "Deploy from a branch", branch `main`,
-   folder `/ (root)`. Save.
-4. After a minute, your app will be live at:
+   deployment", set **Source** to **"GitHub Actions"** (not "Deploy from a
+   branch"). No further config needed — the workflow already runs `npm ci`,
+   `npm run build`, and publishes `dist/` on every push to `main`.
+4. Watch the **Actions** tab for the "Deploy to GitHub Pages" run to go
+   green. After that, your app will be live at:
    `https://YOUR_USERNAME.github.io/YOUR_REPO/`
+   (or your custom domain, if you have a `public/CNAME` file set up.)
 
 ## 6. Add it to your iPhone home screen
 
@@ -102,20 +108,23 @@ data, not keeping this key secret.
 ## 7. Sign in
 
 The first time you open it, enter your email and tap **Send sign-in
-link** — you'll get an email with a one-time link. Tap it, and you're in.
-Your existing dates (the ones already logged) will load in automatically
-the first time you sign in, since they're built into the code as a
-one-time migration.
+code** — you'll get an email with a 6-digit code. Enter it in the app and
+tap **Verify code**, and you're in. (This whole flow stays inside the app,
+which matters if you've added it to your iPhone home screen — a magic
+*link* would hand off to Safari instead.) Your existing dates (the ones
+already logged) will load in automatically the first time you sign in,
+since they're built into the code as a one-time migration.
 
 ## Going forward
 
 - **Data changes** (logging a new date, editing a note): saved instantly
   to Supabase, no commit needed, syncs across every device you sign into.
-- **Code changes** (styling tweaks, new features): edit the files and
-  push to GitHub like normal; Pages redeploys automatically in about a
-  minute.
+- **Code changes** (styling tweaks, new features): edit the files in
+  `src/` and push to GitHub like normal; the GitHub Actions workflow
+  rebuilds and redeploys Pages automatically in about a minute.
 - If you want me to add new dates the way we've been doing in chat, just
-  tell me — I'll update the `SEED_ENTRIES` block in `index.html` and give
-  you the updated file to commit. Everyone's existing saved data is
-  untouched either way, since the migration only fills in dates that
+  tell me — I'll update the `SEED_ENTRIES` block in
+  `src/composables/useSchedule.js` and give you the updated file to
+  commit. Everyone's existing saved data is untouched either way, since
+  the migration only fills in dates that
   aren't already saved.
