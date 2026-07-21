@@ -37,7 +37,7 @@ async function commitEntry(userId) {
     if (pendingType.value === 'none' && !note) {
       const existing = schedule[selectedDate.value];
       if (existing && existing.id) {
-        ({ error } = await deleteScheduleEntry(existing.id));
+        ({ error } = await deleteScheduleEntry(existing.id, userId));
       }
       if (!error) delete schedule[selectedDate.value];
     } else {

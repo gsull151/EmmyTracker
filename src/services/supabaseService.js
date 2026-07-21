@@ -55,6 +55,6 @@ export function upsertScheduleEntry(entry) {
   return supabase.from('schedule_entries').upsert(entry, { onConflict: 'user_id,entry_date' }).select().single();
 }
 
-export function deleteScheduleEntry(id) {
-  return supabase.from('schedule_entries').delete().eq('id', id);
+export function deleteScheduleEntry(id, userId) {
+  return supabase.from('schedule_entries').delete().eq('id', id).eq('user_id', userId);
 }
