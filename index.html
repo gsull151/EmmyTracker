@@ -155,7 +155,7 @@
   <p>Sign in with your email to access your tracker. We'll send you a one-time code — no password needed.</p>
   <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" autocapitalize="off">
   <button id="sendLinkBtn">Send sign-in code</button>
-  <input type="text" id="codeInput" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none;">
+  <input type="text" id="codeInput" placeholder="Verification code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" style="display:none;">
   <button id="verifyCodeBtn" style="display:none;">Verify code</button>
   <div id="authStatus"></div>
 </div>
@@ -265,7 +265,7 @@ document.getElementById('sendLinkBtn').addEventListener('click', async () => {
     return;
   }
   pendingEmail = email;
-  statusEl.textContent = 'Check your email for the 6-digit code.';
+  statusEl.textContent = 'Check your email for the verification code.';
   document.getElementById('codeInput').style.display = '';
   document.getElementById('verifyCodeBtn').style.display = '';
   document.getElementById('codeInput').focus();
@@ -275,7 +275,7 @@ document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
   const code = document.getElementById('codeInput').value.trim();
   const statusEl = document.getElementById('authStatus');
   if (!pendingEmail) { statusEl.textContent = 'Enter your email and request a code first.'; return; }
-  if (!code) { statusEl.textContent = 'Enter the 6-digit code.'; return; }
+  if (!code) { statusEl.textContent = 'Enter the verification code.'; return; }
   statusEl.textContent = 'Verifying...';
   const { error } = await supabase.auth.verifyOtp({ email: pendingEmail, token: code, type: 'email' });
   statusEl.textContent = error ? ('Error: ' + error.message) : '';
