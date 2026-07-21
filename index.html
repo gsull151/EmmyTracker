@@ -107,6 +107,8 @@
   .day-cell.day-visit { background: var(--day-bg); color: var(--day-ink); border-color: var(--day); font-weight: 600; }
   .day-cell.both { background: var(--both-bg); color: var(--ink); border-color: var(--overnight); font-weight: 600; }
   .day-cell.today { box-shadow: 0 0 0 2px var(--today-ring); }
+  .day-cell.selected { box-shadow: 0 0 0 2px var(--ink); }
+  .day-cell.selected.today { box-shadow: 0 0 0 2px var(--today-ring), 0 0 0 4px var(--ink); }
   .day-cell .note-dot { position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: var(--ink-soft); }
 
   .legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
@@ -349,14 +351,16 @@ async function commitEntry() {
   const statusEl = document.getElementById('saveStatus');
   statusEl.textContent = 'Saving...';
 
+  let error = null;
+
   if (pendingType === 'none') {
     const existing = schedule[selectedDate];
     if (existing && existing.id) {
-      await supabase.from('schedule_entries').delete().eq('id', existing.id);
+      ({ error } = await supabase.from('schedule_entries').delete().eq('id', existing.id));
     }
-    delete schedule[selectedDate];
+    if (!error) delete schedule[selectedDate];
   } else {
-    const { data, error } = await supabase
+    const { data, error: upsertError } = await supabase
       .from('schedule_entries')
       .upsert({
         user_id: currentUser.id,
@@ -366,13 +370,18 @@ async function commitEntry() {
       }, { onConflict: 'user_id,entry_date' })
       .select()
       .single();
+    error = upsertError;
     if (!error && data) {
       schedule[selectedDate] = { type: data.type, note: data.note || '', id: data.id };
     }
   }
 
-  statusEl.textContent = 'Saved';
-  setTimeout(() => { if (statusEl.textContent === 'Saved') statusEl.textContent = ''; }, 1200);
+  if (error) {
+    statusEl.textContent = 'Error: ' + error.message;
+  } else {
+    statusEl.textContent = 'Saved';
+    setTimeout(() => { if (statusEl.textContent === 'Saved') statusEl.textContent = ''; }, 1200);
+  }
   renderStats();
   renderCalendar();
   renderLog();
@@ -431,6 +440,7 @@ function renderCalendar() {
     }
     const isToday = viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate();
     if (isToday) cls += ' today';
+    if (key === selectedDate) cls += ' selected';
     const hasNote = entry && entry.note ? '<span class="note-dot"></span>' : '';
     html += `<div class="${cls}" data-key="${key}">${d}${hasNote}</div>`;
   }
@@ -481,6 +491,7 @@ async function openEditor(key) {
   document.getElementById('editNote').value = entry && entry.note ? entry.note : '';
   document.getElementById('saveStatus').textContent = '';
   updateTypeButtons();
+  renderCalendar();
   document.getElementById('editor').classList.add('open');
   document.getElementById('editor').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -509,6 +520,7 @@ document.getElementById('closeEditor').addEventListener('click', async () => {
   await commitEntry();
   document.getElementById('editor').classList.remove('open');
   selectedDate = null;
+  renderCalendar();
 });
 
 document.getElementById('saveEditor').addEventListener('click', async () => {
