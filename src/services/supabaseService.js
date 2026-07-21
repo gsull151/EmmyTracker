@@ -5,8 +5,29 @@ const SUPABASE_ANON_KEY = 'sb_publishable_yrkA2ASdJZulD6E6bvq_5w_XS9Q7d75';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-export function signInWithOtp(email) {
-  return supabase.auth.signInWithOtp({ email });
+// Bypasses supabase-js's signInWithOtp: the library treats any HTTP 500
+// (which is what Supabase returns for a "sign-ups not open" rejection) as a
+// generic retryable network error and discards the response body before it
+// can be read, losing the real message. Calling the endpoint directly lets
+// us surface what the server actually said.
+export async function signInWithOtp(email) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, create_user: true })
+    });
+    if (res.ok) return { error: null };
+    let data = {};
+    try { data = await res.json(); } catch { /* non-JSON body */ }
+    const message = data.message || data.msg || data.error_description || data.error || `Request failed (${res.status})`;
+    return { error: { message } };
+  } catch (err) {
+    return { error: { message: (err && err.message) || 'Network error — please try again.' } };
+  }
 }
 
 export function verifyOtp(email, token) {
