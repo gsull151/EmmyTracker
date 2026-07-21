@@ -351,36 +351,42 @@ async function commitEntry() {
   const statusEl = document.getElementById('saveStatus');
   statusEl.textContent = 'Saving...';
 
-  let error = null;
+  try {
+    if (!currentUser) throw new Error('Not signed in — please sign in again.');
 
-  if (pendingType === 'none') {
-    const existing = schedule[selectedDate];
-    if (existing && existing.id) {
-      ({ error } = await supabase.from('schedule_entries').delete().eq('id', existing.id));
-    }
-    if (!error) delete schedule[selectedDate];
-  } else {
-    const { data, error: upsertError } = await supabase
-      .from('schedule_entries')
-      .upsert({
-        user_id: currentUser.id,
-        entry_date: selectedDate,
-        type: pendingType,
-        note
-      }, { onConflict: 'user_id,entry_date' })
-      .select()
-      .single();
-    error = upsertError;
-    if (!error && data) {
-      schedule[selectedDate] = { type: data.type, note: data.note || '', id: data.id };
-    }
-  }
+    let error = null;
 
-  if (error) {
-    statusEl.textContent = 'Error: ' + error.message;
-  } else {
-    statusEl.textContent = 'Saved';
-    setTimeout(() => { if (statusEl.textContent === 'Saved') statusEl.textContent = ''; }, 1200);
+    if (pendingType === 'none') {
+      const existing = schedule[selectedDate];
+      if (existing && existing.id) {
+        ({ error } = await supabase.from('schedule_entries').delete().eq('id', existing.id));
+      }
+      if (!error) delete schedule[selectedDate];
+    } else {
+      const { data, error: upsertError } = await supabase
+        .from('schedule_entries')
+        .upsert({
+          user_id: currentUser.id,
+          entry_date: selectedDate,
+          type: pendingType,
+          note
+        }, { onConflict: 'user_id,entry_date' })
+        .select()
+        .single();
+      error = upsertError;
+      if (!error && data) {
+        schedule[selectedDate] = { type: data.type, note: data.note || '', id: data.id };
+      }
+    }
+
+    if (error) {
+      statusEl.textContent = 'Error: ' + error.message;
+    } else {
+      statusEl.textContent = 'Saved';
+      setTimeout(() => { if (statusEl.textContent === 'Saved') statusEl.textContent = ''; }, 1200);
+    }
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + (err && err.message ? err.message : String(err));
   }
   renderStats();
   renderCalendar();
