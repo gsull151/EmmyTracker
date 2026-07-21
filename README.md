@@ -1,10 +1,9 @@
-# Emerson's Schedule — standalone app setup
+# Emmy's Schedule — standalone app setup
 
 This is a small standalone version of the tracker that lives on GitHub Pages
 and saves data to a free Supabase database, so it works as a real app on
 your iPhone (and any other device) with no manual git commits required for
-day-to-day use. You'll only commit to the repo when the *code* changes —
-not when your *data* changes.
+day-to-day use..
 
 ## Stack
 
