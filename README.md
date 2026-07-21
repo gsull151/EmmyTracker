@@ -22,7 +22,7 @@ create table schedule_entries (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users not null default auth.uid(),
   entry_date date not null,
-  type text not null check (type in ('overnight','day-visit','both')),
+  type text not null check (type in ('none','overnight','day-visit','both')),
   note text default '',
   updated_at timestamptz default now(),
   unique(user_id, entry_date)
@@ -41,6 +41,19 @@ create policy "Users can update own entries" on schedule_entries
 
 create policy "Users can delete own entries" on schedule_entries
   for delete using (auth.uid() = user_id);
+```
+
+**Already have this table from before `'none'` was a valid type?** Run this
+once instead of recreating the table, so notes can be saved on days with
+no visit type:
+
+```sql
+alter table schedule_entries
+  drop constraint schedule_entries_type_check;
+
+alter table schedule_entries
+  add constraint schedule_entries_type_check
+  check (type in ('none', 'overnight', 'day-visit', 'both'));
 ```
 
 This creates the table and locks it down so only you (once signed in) can

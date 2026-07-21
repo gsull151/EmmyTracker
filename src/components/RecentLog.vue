@@ -9,7 +9,10 @@ const entries = computed(() => {
     const entry = schedule[k];
     const dateObj = new Date(k + 'T00:00:00');
     const dateStr = dateObj.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    const tagLabel = entry.type === 'overnight' ? 'Overnight' : entry.type === 'day-visit' ? 'Day visit' : 'Both';
+    const tagLabel = entry.type === 'overnight' ? 'Overnight'
+      : entry.type === 'day-visit' ? 'Day visit'
+      : entry.type === 'both' ? 'Both'
+      : 'Note';
     return { key: k, dateStr, note: entry.note, type: entry.type, tagLabel };
   });
 });
@@ -40,5 +43,6 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
 .log-tag.overnight { background: var(--overnight-bg); color: var(--overnight-ink); }
 .log-tag.day-visit { background: var(--day-bg); color: var(--day-ink); }
 .log-tag.both { background: #EFE4DE; color: var(--ink); }
+.log-tag.none { background: #EFEFEF; color: var(--ink-soft); }
 .empty-log { color: var(--ink-soft); font-size: 13px; padding: 6px 0; }
 </style>
