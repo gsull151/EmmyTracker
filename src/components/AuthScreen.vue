@@ -22,7 +22,7 @@ async function handleVerify() {
 
 <template>
   <div id="authScreen">
-    <h1>Emerson's schedule</h1>
+    <h1>Emmy's schedule</h1>
     <p>Sign in with your email to access your tracker. We'll send you a one-time code — no password needed.</p>
     <input type="email" v-model="email" placeholder="you@example.com" autocomplete="email" autocapitalize="off">
     <button @click="handleSend">Send sign-in code</button>

@@ -1,31 +1,5 @@
 import { reactive, ref } from 'vue';
-import {
-  fetchScheduleEntries,
-  upsertScheduleEntries,
-  upsertScheduleEntry,
-  deleteScheduleEntry
-} from '../services/supabaseService';
-
-// Entries added via chat land here. On first sign-in after adding new ones,
-// they're upserted into Supabase (without touching anything already saved).
-// Safe to leave in place or replace next time new dates are added.
-const SEED_ENTRIES = {
-  '2026-07-01': { type: 'overnight', note: 'Upper Peninsula, Michigan trip' },
-  '2026-07-02': { type: 'overnight', note: 'Upper Peninsula, Michigan trip' },
-  '2026-07-03': { type: 'overnight', note: 'Upper Peninsula, Michigan trip' },
-  '2026-07-04': { type: 'overnight', note: 'Upper Peninsula, Michigan trip' },
-  '2026-07-05': { type: 'overnight', note: 'Upper Peninsula, Michigan trip' },
-  '2026-07-06': { type: 'overnight', note: 'Upper Peninsula, Michigan trip' },
-  '2026-07-08': { type: 'overnight', note: '' },
-  '2026-07-09': { type: 'overnight', note: '' },
-  '2026-07-10': { type: 'overnight', note: '' },
-  '2026-07-11': { type: 'overnight', note: '' },
-  '2026-07-12': { type: 'day-visit', note: "Slept at a friend's house that night (12th-13th)" },
-  '2026-07-16': { type: 'overnight', note: 'Michigan trip' },
-  '2026-07-17': { type: 'overnight', note: 'Michigan trip' },
-  '2026-07-18': { type: 'overnight', note: 'Michigan trip' },
-  '2026-07-19': { type: 'day-visit', note: 'Michigan trip, went home Sunday afternoon' }
-};
+import { fetchScheduleEntries, upsertScheduleEntry, deleteScheduleEntry } from '../services/supabaseService';
 
 const schedule = reactive({});
 const viewYear = ref(new Date().getFullYear());
@@ -47,22 +21,6 @@ async function loadSchedule(userId) {
     data.forEach(row => {
       schedule[row.entry_date] = { type: row.type, note: row.note || '', id: row.id };
     });
-  }
-
-  const missing = Object.keys(SEED_ENTRIES).filter(k => !schedule[k]);
-  if (missing.length > 0) {
-    const rows = missing.map(k => ({
-      user_id: userId,
-      entry_date: k,
-      type: SEED_ENTRIES[k].type,
-      note: SEED_ENTRIES[k].note || ''
-    }));
-    const { data: inserted, error: insertErr } = await upsertScheduleEntries(rows);
-    if (!insertErr && inserted) {
-      inserted.forEach(row => {
-        schedule[row.entry_date] = { type: row.type, note: row.note || '', id: row.id };
-      });
-    }
   }
 }
 

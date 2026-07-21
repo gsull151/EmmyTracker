@@ -20,7 +20,7 @@ onMounted(() => {
   <AuthScreen v-if="!currentUser" />
   <div v-else class="wrap">
     <div class="signout" @click="signOut">Sign out</div>
-    <h1>Emerson's schedule</h1>
+    <h1>Emmy's schedule</h1>
     <p class="subtitle">Tracking overnights and daytime visits under the parenting plan</p>
 
     <div class="card"><StatsGrid /></div>

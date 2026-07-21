@@ -51,10 +51,6 @@ export function fetchScheduleEntries(userId) {
   return supabase.from('schedule_entries').select('*').eq('user_id', userId);
 }
 
-export function upsertScheduleEntries(rows) {
-  return supabase.from('schedule_entries').upsert(rows, { onConflict: 'user_id,entry_date' }).select();
-}
-
 export function upsertScheduleEntry(entry) {
   return supabase.from('schedule_entries').upsert(entry, { onConflict: 'user_id,entry_date' }).select().single();
 }
