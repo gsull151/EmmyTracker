@@ -13,10 +13,10 @@ function fmtDateKey(y, m, d) {
   return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
 
-async function loadSchedule(userId) {
+async function loadSchedule() {
   Object.keys(schedule).forEach(k => delete schedule[k]);
 
-  const { data, error } = await fetchScheduleEntries(userId);
+  const { data, error } = await fetchScheduleEntries();
   if (!error && data) {
     data.forEach(row => {
       schedule[row.entry_date] = { type: row.type, note: row.note || '', id: row.id };
@@ -37,7 +37,7 @@ async function commitEntry(userId) {
     if (pendingType.value === 'none' && !note) {
       const existing = schedule[selectedDate.value];
       if (existing && existing.id) {
-        ({ error } = await deleteScheduleEntry(existing.id, userId));
+        ({ error } = await deleteScheduleEntry(existing.id));
       }
       if (!error) delete schedule[selectedDate.value];
     } else {

@@ -12,7 +12,7 @@ const { currentUser, initAuth, signOut } = useAuth();
 const { loadSchedule } = useSchedule();
 
 onMounted(() => {
-  initAuth(() => loadSchedule(currentUser.value.id));
+  initAuth(() => loadSchedule());
 });
 </script>
 

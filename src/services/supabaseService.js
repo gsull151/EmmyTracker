@@ -47,14 +47,17 @@ export function onAuthStateChange(callback) {
   return supabase.auth.onAuthStateChange(callback);
 }
 
-export function fetchScheduleEntries(userId) {
-  return supabase.from('schedule_entries').select('*').eq('user_id', userId);
+// The schedule is shared: every signed-in account sees and can edit every
+// row. Access is enforced entirely by Supabase RLS policies, not a
+// user_id filter here.
+export function fetchScheduleEntries() {
+  return supabase.from('schedule_entries').select('*');
 }
 
 export function upsertScheduleEntry(entry) {
-  return supabase.from('schedule_entries').upsert(entry, { onConflict: 'user_id,entry_date' }).select().single();
+  return supabase.from('schedule_entries').upsert(entry, { onConflict: 'entry_date' }).select().single();
 }
 
-export function deleteScheduleEntry(id, userId) {
-  return supabase.from('schedule_entries').delete().eq('id', id).eq('user_id', userId);
+export function deleteScheduleEntry(id) {
+  return supabase.from('schedule_entries').delete().eq('id', id);
 }
