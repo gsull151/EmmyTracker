@@ -18,7 +18,7 @@ async function handleDelete() {
 
 <template>
   <div v-show="isMealFormOpen" class="editor">
-    <div class="edit-title">{{ mealDraft.id ? 'Edit meal' : 'New meal' }}</div>
+    <div class="edit-title">{{ mealDraft.id ? 'Edit' : 'New' }} {{ mealDraft.meal_type }}</div>
     <input v-model="mealDraft.name" type="text" placeholder="Meal name" class="name-input" />
     <textarea v-model="mealDraft.ingredients" placeholder="Ingredients — one per line"></textarea>
     <textarea v-model="mealDraft.instructions" placeholder="Instructions"></textarea>

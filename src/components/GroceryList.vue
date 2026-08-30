@@ -1,9 +1,11 @@
 <script setup>
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useWeeklyPlan } from '../composables/useWeeklyPlan';
 
 const { weekDates, dayMeal } = useWeeklyPlan();
 const checked = reactive(new Set());
+const extraItems = reactive([]);
+const newItemText = ref('');
 
 const groups = computed(() => {
   const seen = new Set();
@@ -29,6 +31,17 @@ function toggle(key) {
   if (checked.has(key)) checked.delete(key);
   else checked.add(key);
 }
+
+function addExtraItem() {
+  const text = newItemText.value.trim();
+  if (!text) return;
+  extraItems.push({ text, checked: false });
+  newItemText.value = '';
+}
+
+function removeExtraItem(index) {
+  extraItems.splice(index, 1);
+}
 </script>
 
 <template>
@@ -44,6 +57,19 @@ function toggle(key) {
       </label>
     </div>
   </div>
+
+  <div class="grocery-group extra-group">
+    <div class="group-heading">Other items</div>
+    <label v-for="(item, i) in extraItems" :key="i" class="grocery-item extra-item">
+      <input type="checkbox" v-model="item.checked" />
+      <span :class="{ done: item.checked }">{{ item.text }}</span>
+      <button class="btn-remove" title="Remove" @click="removeExtraItem(i)">&times;</button>
+    </label>
+    <form class="add-item-row" @submit.prevent="addExtraItem">
+      <input v-model="newItemText" type="text" placeholder="Add an item..." />
+      <button type="submit" class="btn-add-item">Add</button>
+    </form>
+  </div>
 </template>
 
 <style scoped>
@@ -54,4 +80,23 @@ function toggle(key) {
 .grocery-item { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 3px 0; cursor: pointer; }
 .grocery-item input { flex-shrink: 0; }
 .grocery-item .done { text-decoration: line-through; color: var(--ink-soft); }
+
+.extra-group { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.extra-item { justify-content: flex-start; }
+.extra-item span { flex: 1; }
+.btn-remove {
+  border: none; background: none; color: var(--ink-soft); font-size: 16px;
+  cursor: pointer; line-height: 1; padding: 0 4px;
+}
+.btn-remove:hover { color: #B23B3B; }
+.add-item-row { display: flex; gap: 8px; margin-top: 8px; }
+.add-item-row input {
+  flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+  font-family: inherit; font-size: 13px; box-sizing: border-box;
+}
+.btn-add-item {
+  border: 1px solid var(--line); background: var(--card); border-radius: 8px;
+  padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--ink);
+}
+.btn-add-item:hover { background: #F0EDE5; }
 </style>

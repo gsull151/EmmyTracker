@@ -11,16 +11,16 @@ async function loadMeals() {
   if (!error && data) meals.value = data;
 }
 
-function resetDraft() {
+function resetDraft(type = 'dinner') {
   mealDraft.id = null;
   mealDraft.name = '';
-  mealDraft.meal_type = 'dinner';
+  mealDraft.meal_type = type;
   mealDraft.ingredients = '';
   mealDraft.instructions = '';
 }
 
-function startNewMeal() {
-  resetDraft();
+function startNewMeal(type = 'dinner') {
+  resetDraft(type);
   isMealFormOpen.value = true;
   saveStatus.value = '';
 }

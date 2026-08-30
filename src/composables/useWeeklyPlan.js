@@ -6,13 +6,13 @@ function fmtDateKey(d) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
-function sundayOf(date) {
+function mondayOf(date) {
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  d.setDate(d.getDate() - d.getDay());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return fmtDateKey(d);
 }
 
-const weekStart = ref(sundayOf(new Date()));
+const weekStart = ref(mondayOf(new Date()));
 const planByDate = reactive({});
 const selectedDate = ref(null);
 const saveStatus = ref('');
@@ -58,7 +58,7 @@ function nextWeek() {
 }
 
 function goToThisWeek() {
-  weekStart.value = sundayOf(new Date());
+  weekStart.value = mondayOf(new Date());
   selectedDate.value = null;
   loadWeekPlan();
 }
