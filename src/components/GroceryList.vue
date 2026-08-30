@@ -2,23 +2,27 @@
 import { computed, reactive, ref } from 'vue';
 import { useWeeklyPlan } from '../composables/useWeeklyPlan';
 
-const { weekDates, dayMeal } = useWeeklyPlan();
+const { weekDates, dayMealByType } = useWeeklyPlan();
 const checked = reactive(new Set());
 const extraItems = reactive([]);
 const newItemText = ref('');
+
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
 
 const groups = computed(() => {
   const seen = new Set();
   const result = [];
   weekDates.value.forEach(dateKey => {
-    const meal = dayMeal(dateKey);
-    if (!meal || seen.has(meal.id)) return;
-    seen.add(meal.id);
-    const lines = (meal.ingredients || '')
-      .split('\n')
-      .map(line => line.trim())
-      .filter(Boolean);
-    result.push({ mealId: meal.id, name: meal.name, lines });
+    MEAL_TYPES.forEach(type => {
+      const meal = dayMealByType(dateKey, type);
+      if (!meal || seen.has(meal.id)) return;
+      seen.add(meal.id);
+      const lines = (meal.ingredients || '')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+      result.push({ mealId: meal.id, name: meal.name, lines });
+    });
   });
   return result;
 });
@@ -46,7 +50,7 @@ function removeExtraItem(index) {
 
 <template>
   <div class="grocery-title">Grocery list</div>
-  <div v-if="!groups.length" class="empty-state">Fill in this week's dinners to build a shopping list.</div>
+  <div v-if="!groups.length" class="empty-state">Fill in this week's meals to build a shopping list.</div>
   <div v-else class="grocery-groups">
     <div v-for="group in groups" :key="group.mealId" class="grocery-group">
       <div class="group-heading">{{ group.name }}</div>
