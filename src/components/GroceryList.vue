@@ -1,10 +1,13 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
+import { useAuth } from '../composables/useAuth';
 import { useWeeklyPlan } from '../composables/useWeeklyPlan';
+import { useGroceryItems } from '../composables/useGroceryItems';
 
+const { currentUser } = useAuth();
 const { weekDates, dayMealByType } = useWeeklyPlan();
+const { items: extraItems, saveStatus, addItem, toggleItem, removeItem } = useGroceryItems();
 const checked = reactive(new Set());
-const extraItems = reactive([]);
 const newItemText = ref('');
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
@@ -36,15 +39,10 @@ function toggle(key) {
   else checked.add(key);
 }
 
-function addExtraItem() {
-  const text = newItemText.value.trim();
-  if (!text) return;
-  extraItems.push({ text, checked: false });
+async function addExtraItem() {
+  if (!newItemText.value.trim()) return;
+  await addItem(newItemText.value, currentUser.value?.id);
   newItemText.value = '';
-}
-
-function removeExtraItem(index) {
-  extraItems.splice(index, 1);
 }
 </script>
 
@@ -64,15 +62,16 @@ function removeExtraItem(index) {
 
   <div class="grocery-group extra-group">
     <div class="group-heading">Other items</div>
-    <label v-for="(item, i) in extraItems" :key="i" class="grocery-item extra-item">
-      <input type="checkbox" v-model="item.checked" />
+    <label v-for="item in extraItems" :key="item.id" class="grocery-item extra-item">
+      <input type="checkbox" :checked="item.checked" @change="toggleItem(item)" />
       <span :class="{ done: item.checked }">{{ item.text }}</span>
-      <button class="btn-remove" title="Remove" @click="removeExtraItem(i)">&times;</button>
+      <button class="btn-remove" title="Remove" @click="removeItem(item)">&times;</button>
     </label>
     <form class="add-item-row" @submit.prevent="addExtraItem">
       <input v-model="newItemText" type="text" placeholder="Add an item..." />
       <button type="submit" class="btn-add-item">Add</button>
     </form>
+    <div class="save-status">{{ saveStatus }}</div>
   </div>
 </template>
 
@@ -103,4 +102,5 @@ function removeExtraItem(index) {
   padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--ink);
 }
 .btn-add-item:hover { background: #F0EDE5; }
+.save-status { font-size: 12px; color: var(--ink-soft); text-align: right; min-height: 16px; margin-top: 4px; }
 </style>

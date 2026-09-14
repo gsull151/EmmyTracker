@@ -17,7 +17,7 @@ export function deleteMeal(id) {
   return supabase.from('meals').delete().eq('id', id);
 }
 
-// Meal plan entries — one row per calendar date (dinner only, for now),
+// Meal plan entries — one row per calendar date (breakfast/lunch/dinner),
 // same shape as schedule_entries: upserted by entry_date.
 export function fetchMealPlanEntries(startDate, endDate) {
   return supabase.from('meal_plan_entries').select('*').gte('entry_date', startDate).lte('entry_date', endDate);
@@ -29,4 +29,22 @@ export function upsertMealPlanEntry(entry) {
 
 export function deleteMealPlanEntry(id) {
   return supabase.from('meal_plan_entries').delete().eq('id', id);
+}
+
+// Grocery items — ad-hoc shopping list entries scoped to a week, shared
+// like everything else. Multiple rows per week_start (not upserted).
+export function fetchGroceryItems(weekStart) {
+  return supabase.from('grocery_items').select('*').eq('week_start', weekStart).order('created_at');
+}
+
+export function insertGroceryItem(item) {
+  return supabase.from('grocery_items').insert(item).select().single();
+}
+
+export function updateGroceryItem(id, updates) {
+  return supabase.from('grocery_items').update(updates).eq('id', id).select().single();
+}
+
+export function deleteGroceryItem(id) {
+  return supabase.from('grocery_items').delete().eq('id', id);
 }

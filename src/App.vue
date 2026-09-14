@@ -14,11 +14,13 @@ import { useAuth } from './composables/useAuth';
 import { useSchedule } from './composables/useSchedule';
 import { useMeals } from './composables/useMeals';
 import { useWeeklyPlan } from './composables/useWeeklyPlan';
+import { useGroceryItems } from './composables/useGroceryItems';
 
 const { currentUser, initAuth, signOut } = useAuth();
 const { loadSchedule } = useSchedule();
 const { loadMeals } = useMeals();
 const { loadWeekPlan } = useWeeklyPlan();
+const { loadGroceryItems } = useGroceryItems();
 
 const activeTab = ref('schedule');
 
@@ -27,6 +29,7 @@ onMounted(() => {
     loadSchedule();
     loadMeals();
     loadWeekPlan();
+    loadGroceryItems();
   });
 });
 </script>
